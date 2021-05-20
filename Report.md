@@ -1,28 +1,26 @@
 # Report
 
-This is the detailed report on my implementation of the deep deterministic policy gradient algorithm (DDPG) for the Reacher environment. I will just go through part 4 of the [Continuous_Control.ipynb](Continuous_Control.ipynb)-notebook because the learning algorithm is implemented there. Note that in part 4 I mostly adapted the code from the bipedal notebook from the lesson about Actor-Critic Methods. Important things that were changed in the code from the bipedal notebook are:
+This is the detailed report on my implementation of a 2-agent variant of the deep deterministic policy gradient algorithm (DDPG) for the Tennis environment. I will just go through part 4 of the [Tennis.ipynb](Tennis.ipynb)-notebook because the learning algorithm is implemented there. Note that the learning algorithm is not precisely identical to the MADDPG algorithm for the following reasons:
 
-* The gradient in the backpropagation step for the critic neural network is clipped (see line 109 in cell 7).
-* The learning step is only carried out every 20 steps. But then it is done 10 times in a row (see lines 64-67 in cell 7).
-* The rewards that the agents get are very small numbers from 0.01 to 0.04 most of the time. In order to stimulate training, every positive reward that is stored in the Replay-Buffer (and therefore used for training) is changed to 0.1. I want to point out that this really just affects the training. The collected scores per episode, that are used to test the performance of the agents, still just contain the actual rewards the agents get directly from the environment (see lines 17 and 20 in cell 12).
-* In the OUNoise class, where the noise which gets added to the actions is created, the random distribution is changed from a uniform to a standard normal distribution (line 156 in cell 7).
+* In MADDPG every actor only gets its own observations as input whereas in my implementation every actor gets all observations as input.
+* In MADDPG every critic gets the actions from all agents as input whereas in my implementation every critic only gets the action from its associated agent as input.
 
-Note also that the environment is already instantiated in part 1 of the notebook and referenced by the name "env".
+
 
 Now to part 4:
 
 
-In cell 6, in the Actor and Critic classes, the architecture of the neural networks, that will approximate the optimal policy pi and the optimal action value function Q, is defined. In the Actor class (lines 12 to 38) the structure of the neural network that will approximate the policy function is defined and has the following form:
+In cell 6, in the Actor and Critic classes, the architecture of the neural networks, that will approximate optimal policies for the agents and the optimal action value functions, is defined. In the Actor class (lines 12 to 38) the structure of the neural networks for the policy functions is defined and has the following form:
 
-* The input size is 33 which is precisely the dimension of the state vectors.
+* The input size will later be set to 2\*24=48 since we will input all available observations to the actor networks (cf. lines 39-40 in cell 7).
 * There is one hidden layer of size 256 which is activated by the relu-function.
-* The output layer is of size 4 (, which is the dimension of the action vectors) and is activated by the tanh-function.
+* The output layer is of size 2 (, which is the dimension of the action vector of an agent) and is activated by the tanh-function.
 
-In the Critic class (lines 41 to 74) the structure of the neural network that will approximate the action-value function Q is defined and has the following form:
+In the Critic class (lines 41 to 71) the structure of the neural networks for the action-value functions is defined and has the following form:
 
-* There is one input layer of size 33 (= state dimension). The input of that layer gets sent through a hidden layer of dimension 256 and a leaky relu-function is applied afterwards.
-* The result after applying the leaky-relu gets concatenated with another input layer of size 4 (=action dimension).
-* The result of this concatenation gets sent through two hidden layers (of dimensions 256 and 128). Both of those hidden layers are activated by a leaky relu function.
+* There is one input layer of size 2\*24=48 (cf. lines 44-45 in cell 7; note again that we will also input all observations to the critics). The input of that layer gets sent through a hidden layer of dimension 256 and a leaky relu-function is applied afterwards.
+* The result after applying the leaky-relu gets concatenated with another input layer of size 2 (=action dimension of an agent).
+* The result of this concatenation gets sent through another hidden layer (of dimension 128) which again gets activated by a leaky relu function.
 * The output layer has dimension 1 and no activation function is applied.
 
 
