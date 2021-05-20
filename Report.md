@@ -33,7 +33,7 @@ In cell 7 the Agent and ReplayBuffer classes are created, as well as the OUNoise
 * TAU = 0.01             (we will update the weights of the target network softly with factor TAU)
 * LR_ACTOR = 0.0001       (learning rate for the actor neural networks)
 * LR_CRITIC = 0.0003      (learning rate for the critic neural networks)
-* WEIGHT_DECAY = 0  (L2 weight decay for the critic)
+* WEIGHT_DECAY = 0  (L2 weight decay for the critics)
 
 
 Then it is checked if a GPU is available and the device is set to GPU if that's the case; otherwise we will continue with CPU.  
