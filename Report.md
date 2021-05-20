@@ -25,61 +25,59 @@ In the Critic class (lines 41 to 71) the structure of the neural networks for th
 
 
 
-In cell 7 the Agent and ReplayBuffer classes are created, as well as the OUNoise class. But first some of the hyperparameters are already fixed here, namely:
+In cell 7 the Agent and ReplayBuffer classes are created, as well as the OUNoise class. But first some of the hyperparameters are fixed, namely:
 
 * BUFFER_SIZE = 1000000   (number of stored experiences for the experience replay)
 * BATCH_SIZE = 128        (batchsize of the batches that will be taken from the stored experiences during learning)
-* GAMMA = 0.99            (discount rate)
-* TAU = 0.001             (we will update the weights of the target network softly with factor TAU)
+* GAMMA = 0.995            (discount rate)
+* TAU = 0.01             (we will update the weights of the target network softly with factor TAU)
 * LR_ACTOR = 0.0001       (learning rate for the actor neural network)
 * LR_CRITIC = 0.0003      (learning rate for the critic neural network)
-* WEIGHT_DECAY = 0.0001   (L2 weight decay for the critic)
-* UPDATE_EVERY = 20       (the weights of the networks will only be updated every 20 steps)
-* UPDATE_X_TIMES = 10     (when the weights get updated then they will updated 10 times in a row in a single timestep)
+* WEIGHT_DECAY = 0  (L2 weight decay for the critic)
+
 
 Then it is checked if a GPU is available and the device is set to GPU if that's the case; otherwise we will continue with CPU.  
-In the Agent class (lines 23-136) there are 6 methods:  
-In the \_\_init\_\_-method (lines 26-53) four neural networks are instantiated (respectively will get instantiated when an instance of type Agent gets created); two actor networks and two critic networks. Here one of the two critic networks (critic\_target) serves as the target function for the critic-learning step. One of the two actor networks (actor\_target) is used to choose the actions that are input into this target function for the critic-learning step. The other two networks (actor\_local and critic\_local) are the networks that later (after training) will approximate the optimal policy respectively the optimal action-value function. Furthermore the optimizers for the backward propagation steps for actor\_local and critic\_local are set to "Adam". Also the experience replay memory is initialized by creating a ReplayBuffer object and the noise that will later be added to the actions is initialized by creating an OUNoise-object.  
-In the step- and learn-methods the important parts of the learning step are implemented (see lines 55-67 and 83-123): By calling the step-method the experience replay memory is updated and every 20 timesteps 10 batches from the memory are taken and the learn-method gets called 10 times (once per batch). By calling the learn-method forward-and backward propagation of actor\_local and critic\_local is carried out. Here the error of critic\_local is computed by using the target function critic\_target and actor\_local gets just maximized. Furthermore - by calling the soft\_update-method - actor\_target and critic\_target get updated softly with factor TAU (implementation of the soft\_update method is in lines 125-136).  
-In the act-method (see lines 69-78) the behaviour of the agents (depending on the current estimate of the optimal policy actor\_local) is defined. One can see that the agents don't exactly act as guided by actor\_local but there is a noise that is added to the output of the network.   
-In the Reset-method (lines 80-81) the noise gets resetted.  
-In the OUNoise class (lines 138-158) the noise that will get added to the actions when the agents act is defined.  
-In the ReplayBuffer class (lines 160-195) it is defined how to add experiences to the experience replay memory (in the add-method; lines 176-179) and how randomly created batches are chosen from the memory (in the sample-method; lines 181-191).
+In the Agent class (lines 22-130) there are 6 methods:  
+In the \_\_init\_\_-method (lines 25-52) four neural networks are instantiated (respectively will get instantiated when an instance of type Agent gets created); two actor networks and two critic networks. Here one of the two critic networks (critic\_target) serves as the target function for the critic-learning step. One of the two actor networks (actor\_target) is used to choose the actions that will later be input into this target function for the critic-learning step. The other two networks (actor\_local and critic\_local) are the networks that later (after training) will approximate the optimal policy respectively the optimal action-value function. Furthermore the optimizers for the backward propagation steps for actor\_local and critic\_local are set to "Adam". Also the experience replay memory is initialized by creating a ReplayBuffer object and the noise that will later be added to the actions is initialized by creating an OUNoise-object.  
+In the step- and learn-methods the important parts of the learning step are implemented (see lines 54-62 and 78-117): By calling the step-method the experience replay memory is updated and the learn-method gets called. By calling the learn-method forward-and backward propagation of actor\_local and critic\_local is carried out. Here the error of critic\_local is computed by using the target function critic\_target and actor\_local gets optimized by maximizing the output of critic\_local when the actions predicted by actor\_local are input into critic\_local. Furthermore - by calling the soft\_update-method - actor\_target and critic\_target get updated softly with factor TAU (implementation of the soft\_update method is in lines 119-130).  
+In the act-method (see lines 64-73) the behaviour of the agent (depending on the current estimate of the optimal policy actor\_local) is defined. One can see that the agents don't exactly act as guided by actor\_local but there is a noise that is added to the output of the network.   
+In the Reset-method (lines 75-76) the noise gets resetted.  
+In the OUNoise class (lines 132-141) the noise that will get added to the actions when the agents act is defined.  
+In the ReplayBuffer class (lines 154-189) it is defined how to add experiences to the experience replay memory (in the add-method; lines 170-173) and how randomly created batches are chosen from the memory (in the sample-method; lines 175-185).
 
 
-In cell 8 an instance of the Agent class is created.
+In cell 8 two instances of the Agent class are created.
 
 
-In cell 12 the ddpg()-function is defined. By calling this function the DDPG-algorithm will actually be carried out. The training loop does the following things in each episode (until either the training went on for n_episodes=2000 episodes or the goal of having an average score of +30 over 100 consecutive episodes is reached):
+In cell 9 the ddpg()-function is defined. By calling this function the DDPG-algorithm will actually be carried out. The training loop does the following things in each episode (until either the training went on for n_episodes=50000 episodes or the goal of having an average score of +0.5 over 100 consecutive episodes is reached):
 * The environment is reset.
-* The noise is reset.
-* In every timestep of the episode the agents act, get a reward, a new state and the step-method is called. By calling the step-method the new experience is stored in the Repaly-Buffer and every 20 timesteps the agents learn.
+* The noise for both agents is reset.
+* In every timestep of the episode the agents act, get a reward, get a new state and the step-method is called. By calling the step-method the new experience is stored in the Repaly-Buffer and the agents learn.
 * The cumulative reward that was achieved in the episode gets stored in the final\_scores-list and the final\_scores\_deque.
+* The noise gets decreased by a factor of noise_decay=0.9999
 
 
 The final\_scores\_deque is used to check if the goal was reached in the current episode and the final\_scores-list is used for a plot later.
 
 
-The goal was reached after a total number of 208 episodes. Since the average score over 100 consecutive episodes is checked, this means that the environment was solved after 108 episodes.
+The goal was reached after a total number of 2527 episodes. Since the average score over 100 consecutive episodes is checked, this means that the environment was solved after 2427 episodes. (Note however, that in training runs I did before, the goal was sometimes only reached after around 4000 or 5000 episodes.)
 
-The achieved total reward per epsisode is plotted. This plot you can also see here:
+The achieved total reward per epsisode is plotted. This plot you can also see here: 
+
 ![image info](./Pictures/training_plot.png)
 
-In cell 9 the trained agents are run for 100 more episodes in the Reacher-Environment to check their performance. The scores that were achieved in every episode are plotted. This plot you can also see here:
+In cell 10 the trained agents are run for 100 more episodes in the Tennis-Environment to check their performance. The scores that were achieved in every episode are plotted. This plot you can also see here:
+
 ![image info](./Pictures/test_plot.png)
+
+Furthermore the average score (over those 100 episodes) is recorded: 1.8636.
 
 In the last cell the environment gets closed.
 
 ### Ideas for future work
 
-I just adapted the hyperparameters from the Deep Q-Networks coding exercise and they worked well enough. But I haven't really played around with the hyperparameters and I would guess that there are still some possibilities to tweak them.
+I haven't really played around a lot with the hyperparameters and I would guess that there are still some possibilities to tweak them.
 
-Furthermore one could try out the six extensions of the DQN algorithm that were implemented in the Rainbow algorithm:
-* Double DQN
-* Prioritized experience replay 
-* Dueling DQN 
-* Learning from multi-step bootstrap targets
-* Distributional DQN
-* Noisy DQN
+Furthermore one could try out to implement the MADDPG algorithm.
 
-I have no a priori idea if those extensions would give performance improvement for the Banana-Collector environment but at least these are definitely things one could try out.
+I have no a priori idea if MADDPG would give better performance than my variant of DDPG for the Tennis environment but at least this is definitely something one could try out.
