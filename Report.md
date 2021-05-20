@@ -31,8 +31,8 @@ In cell 7 the Agent and ReplayBuffer classes are created, as well as the OUNoise
 * BATCH_SIZE = 128        (batchsize of the batches that will be taken from the stored experiences during learning)
 * GAMMA = 0.995            (discount rate)
 * TAU = 0.01             (we will update the weights of the target network softly with factor TAU)
-* LR_ACTOR = 0.0001       (learning rate for the actor neural network)
-* LR_CRITIC = 0.0003      (learning rate for the critic neural network)
+* LR_ACTOR = 0.0001       (learning rate for the actor neural networks)
+* LR_CRITIC = 0.0003      (learning rate for the critic neural networks)
 * WEIGHT_DECAY = 0  (L2 weight decay for the critic)
 
 
